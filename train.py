@@ -9,18 +9,19 @@ from echo_state_network import ReservoirNetWork
 
 
 # パラメータ群
-TRAIN_DATA_RATIO    = 0.7            # 学習データに使用する割合
-EPOCH_NUM           = 10              # Epoch数
-LEAK_RATE           = 0.02            # 漏れ率 
+TRAIN_DATA_RATIO    = 0.8            # 学習データに使用する割合
+EPOCH_NUM           = 1              # Epoch数
+LEAK_RATE           = 0.5            # 漏れ率 
 NUM_INPUT_NODES     = 1              # 入力層のサイズ
-NUM_RESERVOIR_NODES = 256            # Reservoir層のサイズ
+NUM_RESERVOIR_NODES = 128            # Reservoir層のサイズ
 NUM_OUTPUT_NODES    = 1              # 出力層のサイズ
 ITER_NUM            = 1000           # 繰り返し回数
 SKIP_NUM            = 100              # 繰り返し処理をskipする回数
 T                   = np.pi*16
 dt                  = np.pi*0.01
 NUM_TIME_STEPS      = int(T/dt)
-X_INIT              = 0.01           # Xの初期値
+X_INIT              = 0.001           # Xの初期値
+Y_INIT              = 0.001           # Yの初期値
 LOGISTIC_ALPHA      = 3.9            # Logistic Map alpha
 HENON_ALPHA         = 1.4            # Henon Map alpha
 HENON_BETA          = 0.3            # Henon Map beta
@@ -36,17 +37,30 @@ def train(dataset_type:str):
                                     )
     elif dataset_type == 'sin':
         dataset = InputGenerator(0, T, NUM_TIME_STEPS)
+    elif dataset_type == 'henon_map':
+        dataset = HenonMapDataset(iter_num=ITER_NUM,
+                                  skip_num=SKIP_NUM,
+                                  x_init=X_INIT,
+                                  y_init=Y_INIT,
+                                  alpha=HENON_ALPHA,
+                                  beta=HENON_BETA
+                                )
     else:
         print(f"不明なdataset_tyoe : {dataset_type}")
         exit()
     # データを学習用とtest用に分割
-    data, t = dataset.get_data()
+    if dataset_type == 'henon_map':
+        (data, _), t = dataset.get_data()
+    else:
+        data, t = dataset.get_data()
     train_data_num = int(len(data) * TRAIN_DATA_RATIO)
     train_data = data[:train_data_num]
-    test_data  = data[train_data_num:] 
+    test_data  = data[train_data_num:]
+    teacher_data = np.concatenate([train_data[1:], test_data[:1]])
     # モデルを定義
     model = ReservoirNetWork(
         inputs=train_data,
+        teacher=teacher_data,
         num_input_nodes=NUM_INPUT_NODES, 
         num_reservoir_nodes=NUM_RESERVOIR_NODES, 
         num_output_nodes=NUM_OUTPUT_NODES, 
@@ -86,4 +100,4 @@ if __name__=="__main__":
         ai += Decimal(0.01)
     # for i in a:
     # LEAK_RATE = float(i)
-    train(dataset_type='sin')
+    train(dataset_type='henon_map')

@@ -7,13 +7,15 @@ from scipy import linalg
 
 class ReservoirNetWork:
     def __init__(self, inputs:'numpy.ndarray',
+                 teacher:'numpy.ndarray',
                  num_input_nodes:int,
                  num_reservoir_nodes:int,
                  num_output_nodes:int,
                  leak_rate:float=0.1,
                  activator:'numpy.ufunc'=np.tanh
                 ):
-        self.inputs = inputs # 学習で使う入力
+        self.inputs = inputs        # 学習で使う入力
+        self.teacher = teacher      # 教師データ
         self.log_reservoir_nodes = np.array([np.zeros(num_reservoir_nodes)]) # reservoir層のノードの状態を記録
 
         # init weights
@@ -22,7 +24,7 @@ class ReservoirNetWork:
         self.weights_reservoir = self._generate_reservoir_weights(num_reservoir_nodes)
         for i, layer in enumerate(self.weights_reservoir):
             for j, node in enumerate(layer):
-                if abs(self.weights_reservoir[i][j]) < 0.01 :
+                if abs(self.weights_reservoir[i][j]) < 0.00001 :
                     self.weights_reservoir[i][j] = 0
                 if i == j:
                     self.weights_reservoir[i][j] = 0
@@ -59,10 +61,14 @@ class ReservoirNetWork:
         """出力層の重みを更新
         """
         # Ridge Regression
+        # E_lambda0 = np.identity(self.num_reservoir_nodes) * lambda0 # lambda0
+        # inv_x = np.linalg.inv(self.log_reservoir_nodes.T @ self.log_reservoir_nodes + E_lambda0)
+        # # update weights of output layer
+        # self.weights_output = (inv_x @ self.log_reservoir_nodes.T) @ self.inputs
         E_lambda0 = np.identity(self.num_reservoir_nodes) * lambda0 # lambda0
         inv_x = np.linalg.inv(self.log_reservoir_nodes.T @ self.log_reservoir_nodes + E_lambda0)
-        # update weights of output layer
-        self.weights_output = (inv_x @ self.log_reservoir_nodes.T) @ self.inputs
+        # # update weights of output layer
+        self.weights_output = (inv_x @ self.log_reservoir_nodes.T) @ self.teacher
 
     def train(self, split_num:int, lambda0:float=0.01):
         """学習"""

@@ -65,22 +65,26 @@ class HenonMapDataset:
         """データセットを入手"""
         return (self.__x, self.__y), self.__t
     
-    def calc_henon_map(self, x:'numpy.ndarray'):
-        """Logistic Mapの漸化式"""
-        return self.__alpha * x * (1.0 - x)
+    def calc_henon_map(self, x:'numpy.ndarray', y:'numpy.ndarray'):
+        """Henon Mapの漸化式"""
+        return 1.0 - self.__alpha * x * x + y, self.__beta * x
 
 
 
 if __name__ == "__main__":
-    dataset = LogisticMapDataset(iter_num=300, skip_num=0, alpha=3.9, x_init=0.01)
-    # dataset = HenonMapDataset(iter=300, alpha=1.4, beta=0.3)
-    x, t = dataset.get_data()
-    plot_2d(x=x[:-1], y=x[1:], label_x="t", label_y="x",
-            title="logistic_map", legend=None, plot_type="scatter",
-            color_list=None, save_fig_path="logistic_map.png"
+    # dataset = LogisticMapDataset(iter_num=300, skip_num=0, alpha=3.9, x_init=0.01)
+    dataset = HenonMapDataset(iter_num=300, skip_num=0, x_init=0.01, y_init=0.01, alpha=1.4, beta=0.3)
+    (x, y), t = dataset.get_data()
+    plot_2d(x=x, y=y, label_x="x", label_y="y",
+            title="henon_map", legend=None, plot_type="scatter",
+            color_list=None, save_fig_path="henon_map.png"
             )
     plot_2d(x=t, y=x, label_x="t", label_y="x",
-            title="logistic_map", legend=None, plot_type="plot",
-            color_list=None, save_fig_path="logistic_map_orbit.png"
+            title="henon_map_x", legend=None, plot_type="plot",
+            color_list=None, save_fig_path="henon_map_orbit_x.png"
+            )
+    plot_2d(x=t, y=y, label_x="t", label_y="y",
+            title="henon_map_y", legend=None, plot_type="plot",
+            color_list=None, save_fig_path="henon_map_orbit_y.png"
             )
     
