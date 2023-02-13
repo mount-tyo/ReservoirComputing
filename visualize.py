@@ -1,3 +1,4 @@
+""" 可視化機能をまとめたモジュール """
 import numpy as np
 import matplotlib.pyplot as plt
 

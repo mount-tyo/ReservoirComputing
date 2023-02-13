@@ -1,3 +1,4 @@
+""" Echo State Network """
 import random
 
 import numpy as np
@@ -20,7 +21,7 @@ class ReservoirNetWork:
 
         # init weights
         self.weights_input = self._generate_variational_weights(num_input_nodes, num_reservoir_nodes)
-        
+
         self.weights_reservoir = self._generate_reservoir_weights(num_reservoir_nodes)
         for i, layer in enumerate(self.weights_reservoir):
             for j, node in enumerate(layer):
@@ -132,7 +133,7 @@ class ReservoirNetWork:
                         print()
                 if c_list == []:
                     break
-                
+
                 val = random.choice(c_list)
                 if val == 0.5:
                     cnt_5 += 1
@@ -142,8 +143,6 @@ class ReservoirNetWork:
                     cnt_m5 += 1
                 weights.append(val)
         return np.array([weights])
-        
-            
 
     def _generate_reservoir_weights(self, num_nodes:int):
         """Reservoir層の重みを初期化"""

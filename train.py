@@ -1,3 +1,4 @@
+""" Training module for Echo State Network """
 # Third-partyモジュール
 from decimal import Decimal
 import numpy as np
@@ -11,14 +12,14 @@ from echo_state_network import ReservoirNetWork
 # パラメータ群
 TRAIN_DATA_RATIO    = 0.8            # 学習データに使用する割合
 EPOCH_NUM           = 1              # Epoch数
-LEAK_RATE           = 0.5            # 漏れ率 
+LEAK_RATE           = 0.5            # 漏れ率
 NUM_INPUT_NODES     = 1              # 入力層のサイズ
 NUM_RESERVOIR_NODES = 128            # Reservoir層のサイズ
 NUM_OUTPUT_NODES    = 1              # 出力層のサイズ
 ITER_NUM            = 1000           # 繰り返し回数
-SKIP_NUM            = 100              # 繰り返し処理をskipする回数
-T                   = np.pi*16
-dt                  = np.pi*0.01
+SKIP_NUM            = 100            # 繰り返し処理をskipする回数
+T                   = np.pi*16       # 時間
+dt                  = np.pi*0.01     # 時間刻み
 NUM_TIME_STEPS      = int(T/dt)
 X_INIT              = 0.001           # Xの初期値
 Y_INIT              = 0.001           # Yの初期値
@@ -48,6 +49,7 @@ def train(dataset_type:str):
     else:
         print(f"不明なdataset_tyoe : {dataset_type}")
         exit()
+
     # データを学習用とtest用に分割
     if dataset_type == 'henon_map':
         (data, _), t = dataset.get_data()
@@ -57,19 +59,22 @@ def train(dataset_type:str):
     train_data = data[:train_data_num]
     test_data  = data[train_data_num:]
     teacher_data = np.concatenate([train_data[1:], test_data[:1]])
+
     # モデルを定義
     model = ReservoirNetWork(
         inputs=train_data,
         teacher=teacher_data,
-        num_input_nodes=NUM_INPUT_NODES, 
-        num_reservoir_nodes=NUM_RESERVOIR_NODES, 
-        num_output_nodes=NUM_OUTPUT_NODES, 
+        num_input_nodes=NUM_INPUT_NODES,
+        num_reservoir_nodes=NUM_RESERVOIR_NODES,
+        num_output_nodes=NUM_OUTPUT_NODES,
         leak_rate=LEAK_RATE)
 
+    # 学習
     for epoch in tqdm(range(EPOCH_NUM)):
         model.train(split_num=train_data_num) # 訓練
     train_result = model.get_train_result() # 訓練の結果を取得
 
+    # 推論
     num_predict = int(len(test_data))
     predict_result = model.predict(num_predict)
 
@@ -92,7 +97,7 @@ def train(dataset_type:str):
 
 
 if __name__=="__main__":
-    # logistic_map, sin, 
+    # logistic_map, sin, henon_map
     a = []
     ai = Decimal(0.2)
     while ai <= 0.91:

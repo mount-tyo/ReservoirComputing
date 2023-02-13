@@ -1,3 +1,4 @@
+""" Datasetを作成するためのクラスを定義するファイル """
 # 3rd party
 import numpy as np
 # 自作
